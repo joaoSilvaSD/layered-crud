@@ -1,0 +1,9 @@
+target/
+.mvn/
+.idea/
+*.iws
+*.iml
+*.ipr
+*.db
+.DS_Store
+YOUR .m2/
