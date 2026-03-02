@@ -118,6 +118,70 @@ layered-crud/
     └── application.properties
 ```
 
+## Request Flow
+
+Example: Creating a new user via `POST /api/v1/users`
+
+```
+1. UserController (Presentation Layer)
+   ↓ Receives HTTP request with UserCreateRequest
+   ↓ Validates request using @Valid annotation
+   
+2. UserService (Business Layer)
+   ↓ Receives UserCreateRequest from controller
+   ↓ Uses UserMapper to convert DTO → Entity
+   
+3. UserRepository (Persistence Layer)
+   ↓ Receives UserEntity
+   ↓ Saves to database using Spring Data JPA
+   ↓ Returns saved UserEntity with generated ID
+   
+4. UserService (Business Layer)
+   ↑ Receives saved UserEntity
+   ↑ Uses UserMapper to convert Entity → DTO
+   
+5. UserController (Presentation Layer)
+   ↑ Receives UserResponse
+   ↑ Returns HTTP 201 Created with UserResponse body
+```
+
+### Flow Diagram
+```
+HTTP Request
+     ↓
+[UserController] ──────────────────┐
+     ↓                             │
+     ↓ UserCreateRequest           │
+     ↓                             │
+[UserService] ─────────────────┐   │
+     ↓                         │   │
+     ↓ UserEntity              │   │
+     ↓                         │   │
+[UserRepository]               │   │
+     ↓                         │   │
+[Database (H2)]                │   │
+     ↑                         │   │
+[UserRepository]               │   │
+     ↑                         │   │
+     ↑ UserEntity              │   │
+     ↑                         │   │
+[UserService] ─────────────────┘   │
+     ↑                             │
+     ↑ UserResponse                │
+     ↑                             │
+[UserController] ──────────────────┘
+     ↑
+HTTP Response
+```
+
+### Key Components in Flow
+
+- **UserController**: Entry point, handles HTTP, delegates to service
+- **UserService**: Business logic, orchestrates operations, uses mapper
+- **UserMapper**: Converts between DTOs and Entities (MapStruct)
+- **UserRepository**: Data access, extends JpaRepository
+- **UserEntity**: JPA entity, maps to database table
+
 ## Benefits of Layered Architecture
 
 - Simple and easy to understand
