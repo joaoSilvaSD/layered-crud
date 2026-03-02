@@ -126,12 +126,14 @@ Example: Creating a new user via `POST /api/v1/users`
 1. UserController (Presentation Layer)
    ↓ Receives HTTP request with UserCreateRequest
    ↓ Validates request using @Valid annotation
+   ↓ Calls UserService.create()
    
 2. UserService (Business Layer)
    ↓ Receives UserCreateRequest from controller
    ↓ Uses UserMapper to convert DTO → Entity
+   ↓ Calls UserRepository.save()
    
-3. UserRepository (Persistence Layer)
+3. UserRepository (Persistence Layer - extends JpaRepository)
    ↓ Receives UserEntity
    ↓ Saves to database using Spring Data JPA
    ↓ Returns saved UserEntity with generated ID
@@ -139,6 +141,7 @@ Example: Creating a new user via `POST /api/v1/users`
 4. UserService (Business Layer)
    ↑ Receives saved UserEntity
    ↑ Uses UserMapper to convert Entity → DTO
+   ↑ Returns UserResponse
    
 5. UserController (Presentation Layer)
    ↑ Receives UserResponse
@@ -149,27 +152,32 @@ Example: Creating a new user via `POST /api/v1/users`
 ```
 HTTP Request
      ↓
-[UserController] ──────────────────┐
-     ↓                             │
-     ↓ UserCreateRequest           │
-     ↓                             │
-[UserService] ─────────────────┐   │
-     ↓                         │   │
-     ↓ UserEntity              │   │
-     ↓                         │   │
-[UserRepository]               │   │
-     ↓                         │   │
-[Database (H2)]                │   │
-     ↑                         │   │
-[UserRepository]               │   │
-     ↑                         │   │
-     ↑ UserEntity              │   │
-     ↑                         │   │
-[UserService] ─────────────────┘   │
-     ↑                             │
-     ↑ UserResponse                │
-     ↑                             │
-[UserController] ──────────────────┘
+[UserController] ──────────────────────┐
+(Presentation Layer)                   │
+     ↓                                 │
+     ↓ calls create()                  │
+     ↓ UserCreateRequest               │
+     ↓                                 │
+[UserService] ─────────────────────┐   │
+(Business Layer)                  │   │
+     ↓                             │   │
+     ↓ calls save()                │   │
+     ↓ UserEntity                  │   │
+     ↓                             │   │
+[UserRepository] ──────────────┐   │   │
+(Persistence - JpaRepository)  │   │   │
+     ↓                         │   │   │
+[Database (H2)]                │   │   │
+     ↑                         │   │   │
+[UserRepository] ──────────────┘   │   │
+     ↑                             │   │
+     ↑ returns UserEntity          │   │
+     ↑                             │   │
+[UserService] ─────────────────────┘   │
+     ↑                                 │
+     ↑ returns UserResponse            │
+     ↑                                 │
+[UserController] ──────────────────────┘
      ↑
 HTTP Response
 ```
